@@ -1,9 +1,13 @@
 import yaml
 
+
 class Config:
     def __init__(self, path):
         with open(path, 'r') as f:
-            self.__config = yaml.load(f, Loader=yaml.Loader)
+            self.cfg = yaml.load(f, Loader=yaml.Loader)
 
-    def app_config(self, app):
-        return self.__config.get(app)
+    def app_config(self, app_name):
+        return self.cfg.get(app_name)
+
+    def logger_config(self):
+        return self.cfg.get("logger")

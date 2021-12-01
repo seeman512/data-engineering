@@ -21,7 +21,7 @@ class ApiClient:
 
         r = requests.get(url, data=data, headers=headers)
         if r.status_code == 401:
-            log.info("Token expired")
+            self.log.info("Token expired")
             self.set_token()
 
             headers["Authorization"] = f"JWT {self.token}"

@@ -9,7 +9,7 @@ import logging
 load_dotenv()
 config_path = "config.yaml"
 app_name = "app"
-date = "2021-04-10"
+dates = ["2021-04-01", "2021-04-02", "2021-04-03", "2021-04-04"]
 
 
 class AppError(Exception):
@@ -32,10 +32,12 @@ if __name__ == "__main__":
         app_config['password'] = app_password
 
         client = ApiClient(app_config)
-        data = client.get_data(date)
-
         storage = ApiStorage(app_config)
-        storage.store(date, data)
+
+        for date in dates:
+            data = client.get_data(date)
+
+            storage.store(date, data)
 
     except AppError as e:
         logging.error("ERROR", e)

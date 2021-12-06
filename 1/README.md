@@ -6,9 +6,10 @@ pip3 install -r requirements.txt
 ## Setup environment variables
 Create file **.env** with username and password
 ```
-app_username=$user
-app_password=$pasword
+export app_username=$app_username
+export app_password=$app_password
 ```
+or set username and password in **config.yaml**
 
 ## Launch script
 ```

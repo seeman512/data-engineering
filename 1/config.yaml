@@ -3,6 +3,8 @@ app:
   auth_endpoint: "/auth"
   endpoint: "/out_of_stock"
   directory: "./data/"
+  username: ""
+  password: ""
 
 logger:
   level: "DEBUG"

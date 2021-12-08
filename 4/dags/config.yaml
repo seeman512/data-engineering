@@ -1,0 +1,11 @@
+app:
+  url: "https://robot-dreams-de-api.herokuapp.com"
+  auth_endpoint: "/auth"
+  endpoint: "/out_of_stock"
+  directory: "/home/user/data/"
+  pg_connection_id: "dz4_pg_connection"
+  username: ""
+  password: ""
+
+logger:
+  level: "DEBUG"

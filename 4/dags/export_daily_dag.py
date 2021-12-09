@@ -70,7 +70,6 @@ def export_from_db(date):
             and p.product_id=o.product_id
             and a.aisle_id=p.aisle_id
             and d.department_id=p.department_id
-
     """.format(date)
 
     with open(os.path.join(dir_path, "orders.csv"), "w") as f:

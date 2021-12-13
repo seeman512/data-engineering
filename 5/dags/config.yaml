@@ -2,7 +2,7 @@ app:
   url: "https://robot-dreams-de-api.herokuapp.com"
   auth_endpoint: "/auth"
   endpoint: "/out_of_stock"
-  directory: "/home/user/data/"
+  directory: "/bronze/"
   db_connection_id: "dz5_pg_connection"
   hdfs_connection_id: "dz5_hdfs_connection"
   username: ""

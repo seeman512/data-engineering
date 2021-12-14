@@ -8,6 +8,7 @@ from airflow.models import Variable
 
 from config import Config
 from stock_api_to_hdfs_operator import StockApiToHdfsOperator
+from db_to_hdfs_operator import DbToHdfsOperator
 
 import logging
 
@@ -31,7 +32,6 @@ default_args = {
 }
 
 yesterday = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
-yesterday = '2021-04-01'
 
 dag = DAG(
     dag_id="export_daily_data",
@@ -42,7 +42,7 @@ dag = DAG(
 
 hdfs_dir = os.path.join(app_config['directory'], yesterday)
 
-export_api=StockApiToHdfsOperator(
+export_api = StockApiToHdfsOperator(
     task_id="export_from_api",
     dag=dag,
     hdfs_conn_id=app_config["hdfs_connection_id"],
@@ -52,7 +52,33 @@ export_api=StockApiToHdfsOperator(
     date=yesterday,
     hdfs_file_path=os.path.join(hdfs_dir, "stock_api.csv"),
     username=username,
-    password=password
-)
+    password=password)
 
-export_api
+daily_query = """
+    SELECT *
+    FROM
+        orders o, clients c, products p,
+        aisles a, departments d, stores s,
+        store_types st,
+        location_areas cla, location_areas sla
+    WHERE
+        o.order_date='{}'
+        and c.id=o.client_id
+        and p.product_id=o.product_id
+        and a.aisle_id=p.aisle_id
+        and d.department_id=p.department_id
+        and s.store_id=o.store_id
+        and st.store_type_id=s.store_type_id
+        and cla.area_id=s.location_area_id
+        and sla.area_id=s.location_area_id
+""".format(yesterday)
+
+export_db = DbToHdfsOperator(
+    task_id="export_from_db",
+    dag=dag,
+    db_conn_id=app_config["db_connection_id"],
+    hdfs_conn_id=app_config["hdfs_connection_id"],
+    hdfs_file_path=os.path.join(hdfs_dir, "db.csv"),
+    db_custom_query=daily_query)
+
+[export_api, export_db]

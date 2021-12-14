@@ -1,7 +1,7 @@
 from airflow.models.baseoperator import BaseOperator
 from airflow.utils.decorators import apply_defaults
 from airflow.hooks.postgres_hook import PostgresHook
-from airflow.hooks.hdfs_hook import BaseHook
+from airflow.hooks.base_hook import BaseHook
 
 from hdfs import InsecureClient
 import logging

@@ -3,6 +3,7 @@ app:
   auth_endpoint: "/auth"
   endpoint: "/out_of_stock"
   directory: "/bronze/"
+  stock_api_connection_id: "dz_5_stock_api_connection"
   db_connection_id: "dz5_pg_connection"
   hdfs_connection_id: "dz5_hdfs_connection"
   username: ""

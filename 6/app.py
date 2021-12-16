@@ -46,7 +46,6 @@ if __name__ == "__main__":
 
         hdfs_client = InsecureClient(app_config["hdfs_url"])
         with psycopg2.connect(**app_config["pagila_db"]) as pg_connect:
-            pass
             db_to_hdfs(hdfs_client, pg_connect, app_config["directory"])
 
         spark = SparkSession.builder.master('local').appName("dz_6").getOrCreate()
@@ -59,6 +58,7 @@ if __name__ == "__main__":
         category_df = get_df("category")
         actor_df = get_df("actor")
         film_actor_df = get_df("film_actor")
+        inventory_df = get_df("inventory")
 
         # JOIN DFs
         film_vs_category_df = film_df\
@@ -71,7 +71,7 @@ if __name__ == "__main__":
         # RESULTS
         results = [{
             "msg": "вывести количество фильмов в каждой категории, отсортировать по убыванию",
-            "df": film_vs_category_df\
+            "df": film_vs_category_df
                     .groupBy(category_df.category_id, category_df.name)
                     .count()
                     .orderBy(F.desc("count"))
@@ -85,7 +85,22 @@ if __name__ == "__main__":
                     .agg(F.sum(film_df.rental_duration).alias("duration"))
                     .orderBy(F.desc("duration"))
                     .limit(10)
+            }, {
+            "msg": "вывести категорию фильмов, на которую потратили больше всего денег",
+            "df" : film_vs_category_df
+                    .groupBy(category_df.name)
+                    .agg(F.sum(film_df.replacement_cost).alias("amount"))
+                    .orderBy(F.desc("amount"))
+                    .limit(1)
+                    .select("name", F.round("amount", 2).alias("amount"))
+            }, {
+            "msg": "вывести названия фильмов, которых нет в inventory.",
+            "df": film_df
+                    .join(inventory_df, film_df.film_id==inventory_df.film_id, "left")
+                    .where(inventory_df.film_id.isNull())
+                    .select(film_df.title)
             },
+            # TODO
         ]
 
         for result in results:

@@ -1,0 +1,12 @@
+app:
+  hdfs_url: "http://127.0.0.1:50070/"
+  directory: "/pagila"
+  pagila_db:
+    host: "localhost"
+    port: "5432"
+    database: "pagila"
+    user: "******"
+    password: "******"
+
+logger:
+  level: "INFO"

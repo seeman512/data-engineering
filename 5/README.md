@@ -22,5 +22,4 @@ Create new hdfs connection in **Admin -> Connections**; connection name **dz5_hd
 * port: 50070
 
 ## Avalable dags:
-* **export_initial_data** - exports all database tables
-* **export_daily_data** - exports yesterday's databse orders and API products
+* **export_daily_data** - exports yesterday's databse tables and API products

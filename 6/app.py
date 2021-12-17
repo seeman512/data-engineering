@@ -59,6 +59,9 @@ if __name__ == "__main__":
         actor_df = get_df("actor")
         film_actor_df = get_df("film_actor")
         inventory_df = get_df("inventory")
+        city_df = get_df("city")
+        address_df = get_df("address")
+        customer_df = get_df("customer")
 
         # JOIN DFs
         film_vs_category_df = film_df\
@@ -67,6 +70,14 @@ if __name__ == "__main__":
         film_vs_actor_df = actor_df\
             .join(film_actor_df, film_actor_df.actor_id == actor_df.actor_id, "inner")\
             .join(film_df, film_df.film_id == film_actor_df.film_id, "inner")
+        children_category_actor_df = category_df\
+            .where(category_df.name == "Children")\
+            .join(film_category_df, film_category_df.category_id == category_df.category_id, "inner")\
+            .join(film_df, film_df.film_id == film_category_df.film_id, "inner")\
+            .join(film_actor_df, film_actor_df.film_id == film_category_df.film_id, "inner")\
+            .join(actor_df, actor_df.actor_id == film_actor_df.actor_id, "inner")\
+            .groupBy(actor_df.actor_id, actor_df.first_name, actor_df.last_name)\
+            .count()
 
         # RESULTS
         results = [{
@@ -99,6 +110,31 @@ if __name__ == "__main__":
                     .join(inventory_df, film_df.film_id==inventory_df.film_id, "left")
                     .where(inventory_df.film_id.isNull())
                     .select(film_df.title)
+            }, {
+            "msg": "вывести топ 3 актеров, которые больше всего появлялись "
+                    + "в фильмах в категории “Children”."
+                    + "Если у нескольких актеров одинаковое кол-во фильмов, вывести всех.",
+            "df": children_category_actor_df
+                    .join(children_category_actor_df
+                            .select("count")
+                            .distinct()
+                            .orderBy(F.desc("count"))
+                            .limit(3),
+                          ["count"],
+                          "inner")
+                    .orderBy(F.desc("count"))
+            }, {
+            "msg": "вывести города с количеством активных и неактивных клиентов "
+                    + "(активный — customer.active = 1). "
+                    + "Отсортировать по количеству неактивных клиентов по убыванию.",
+            "df": city_df
+                    .join(address_df, city_df.city_id == address_df.city_id, "inner")
+                    .join(customer_df, customer_df.address_id == address_df.address_id, "inner")
+                    .groupBy(city_df.city_id, city_df.city)
+                    .agg(
+                        F.sum(F.when(customer_df.active == 1, 1).otherwise(0)).alias('active_users'),
+                        F.sum(F.when(customer_df.active == 0, 1).otherwise(0)).alias('inactive_users'))
+                    .orderBy(F.desc("inactive_users"), "city")
             },
             # TODO
         ]

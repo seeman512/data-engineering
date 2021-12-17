@@ -62,6 +62,7 @@ if __name__ == "__main__":
         city_df = get_df("city")
         address_df = get_df("address")
         customer_df = get_df("customer")
+        rental_df = get_df("rental")
 
         # JOIN DFs
         film_vs_category_df = film_df\
@@ -78,6 +79,18 @@ if __name__ == "__main__":
             .join(actor_df, actor_df.actor_id == film_actor_df.actor_id, "inner")\
             .groupBy(actor_df.actor_id, actor_df.first_name, actor_df.last_name)\
             .count()
+        categories_with_a_and_dash_cities_df = film_vs_category_df\
+            .join(inventory_df, film_df.film_id == inventory_df.film_id, "inner")\
+            .join(rental_df, rental_df.inventory_id == inventory_df.inventory_id, "inner")\
+            .join(customer_df, customer_df.customer_id == rental_df.customer_id, "inner")\
+            .join(address_df, address_df.address_id == customer_df.address_id, "inner")\
+            .join(city_df, city_df.city_id==address_df.city_id, "inner")\
+            .where(F.lower("city").contains("a") | F.col("city").contains("-"))\
+            .groupBy(category_df.category_id, category_df.name)\
+            .agg(
+                F.sum(F.when(F.lower("city").startswith("a"), film_df.rental_duration).otherwise(0)).alias('a_amount'),
+                F.sum(F.when(F.col("city").contains("-"), film_df.rental_duration).otherwise(0)).alias('dash_amount')
+            )
 
         # RESULTS
         results = [{
@@ -135,8 +148,23 @@ if __name__ == "__main__":
                         F.sum(F.when(customer_df.active == 1, 1).otherwise(0)).alias('active_users'),
                         F.sum(F.when(customer_df.active == 0, 1).otherwise(0)).alias('inactive_users'))
                     .orderBy(F.desc("inactive_users"), "city")
-            },
-            # TODO
+            }, {
+            "msg": "вывести категорию фильмов, у которой самое большое кол-во часов "
+                    + "суммарной аренды в городах (customer.address_id в этом city), "
+                    + "и которые начинаются на букву “a”. "
+                    + "То же самое сделать для городов в которых есть символ “-”.",
+            "df": categories_with_a_and_dash_cities_df
+                    .orderBy(F.desc("a_amount"))
+                    .limit(1)
+                    .select("name", F.col("a_amount").alias("amount"))
+                    .withColumn("details", F.lit("cities with 'a'"))
+                    .union(
+                        categories_with_a_and_dash_cities_df
+                            .orderBy(F.desc("dash_amount"))
+                            .limit(1)
+                            .select("name", F.col("dash_amount").alias("amount"))
+                            .withColumn("details", F.lit("cities with '-'")))
+            }
         ]
 
         for result in results:

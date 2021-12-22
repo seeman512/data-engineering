@@ -37,7 +37,6 @@ default_args = {
 }
 
 yesterday = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
-yesterday = '2021-04-01'
 
 spark_conn = BaseHook.get_connection(app_config["spark_connection_id"])
 spark = SparkSession.builder\

@@ -9,6 +9,11 @@ app:
   spark_connection_id: "spark_connection"
   username: ""
   password: ""
+  tables:
+    - aisles
+    - departments
+    - stores
+    - store_types
 
 logger:
   level: "DEBUG"

@@ -8,5 +8,6 @@ class DbStoreTypesTransformer(BaseTransformer):
         super().__init__(spark, file_path, *args, **kwargs)
 
     def transform(self):
-        return self.spark.read.csv(self.file_path)\
+        return self.spark\
+            .read.csv(self.file_path, header="true", inferSchema="true")\
             .dropDuplicates()

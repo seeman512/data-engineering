@@ -63,6 +63,7 @@ if __name__ == "__main__":
         address_df = get_df("address")
         customer_df = get_df("customer")
         rental_df = get_df("rental")
+        payment_df = get_df("payment")
 
         # JOIN DFs
         film_vs_category_df = film_df\
@@ -112,8 +113,11 @@ if __name__ == "__main__":
             }, {
             "msg": "вывести категорию фильмов, на которую потратили больше всего денег",
             "df" : film_vs_category_df
+                    .join(inventory_df, inventory_df.film_id == film_df.film_id, "inner")
+                    .join(rental_df, rental_df.inventory_id == inventory_df.inventory_id, "inner")
+                    .join(payment_df, payment_df.rental_id == rental_df.rental_id, "inner")
                     .groupBy(category_df.name)
-                    .agg(F.sum(film_df.replacement_cost).alias("amount"))
+                    .agg(F.sum(payment_df.amount).alias("amount"))
                     .orderBy(F.desc("amount"))
                     .limit(1)
                     .select("name", F.round("amount", 2).alias("amount"))

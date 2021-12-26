@@ -27,12 +27,16 @@
 
 -- 3. вывести категорию фильмов, на которую потратили больше всего денег.
     SELECT
-        c.name, sum(f.replacement_cost) as amount
+        c.name, sum(p.amount) as amount
     FROM
-        film f, film_category fc ,category c
+        film f, film_category fc ,category c,
+        inventory i, rental r, payment p
     WHERE
         fc.film_id=f.film_id
         and c.category_id=fc.category_id
+        and i.film_id=f.film_id
+        and r.inventory_id=i.inventory_id
+        and p.rental_id=r.rental_id
     GROUP BY
         c.name
     ORDER BY 

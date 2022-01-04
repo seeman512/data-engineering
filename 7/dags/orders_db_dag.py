@@ -20,9 +20,11 @@ from config import Config
 
 
 config_path = os.path.join(parent_dir, "config.yaml")
-app_name = "app"
-cfg = Config(config_path)
-app_config = cfg.app_config(app_name)
+app_name = "task7"
+cfg = Config(config_path, app_name)
+fs_config = cfg.fs()
+db_config = cfg.db()
+connections_config = cfg.connections()
 
 default_args = {
     'owner': 'airflow',
@@ -32,7 +34,7 @@ default_args = {
 
 yesterday = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
 
-spark_conn = BaseHook.get_connection(app_config["spark_connection_id"])
+spark_conn = BaseHook.get_connection(connections_config["spark_connection_id"])
 spark = SparkSession.builder\
     .master(spark_conn.host)\
     .appName("stock_api_dag")\
@@ -55,20 +57,20 @@ end_task = DummyOperator(
     dag=dag,
 )
 
-for table in app_config["tables"]:
-    bronze_file_path = os.path.join(app_config["bronze_directory"],
+for table in db_config["tables"]:
+    bronze_file_path = os.path.join(fs_config["bronze_directory"],
                                     "orders_db",
                                     yesterday,
                                     f"{table}.csv")
 
-    silver_file_path = os.path.join(app_config["silver_directory"],
+    silver_file_path = os.path.join(fs_config["silver_directory"],
                                     f"db_{table}")
     start_task\
         >> DbToHdfsOperator(
             task_id=f"from_{table}_to_bronze",
             dag=dag,
-            db_conn_id=app_config["db_connection_id"],
-            hdfs_conn_id=app_config["hdfs_connection_id"],
+            db_conn_id=connections_config["db_connection_id"],
+            hdfs_conn_id=connections_config["hdfs_connection_id"],
             db_table_name=table,
             hdfs_file_path=bronze_file_path)\
         >> SparkBronzeToSilverOperator(

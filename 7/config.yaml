@@ -1,19 +1,24 @@
-app:
-  auth_endpoint: "/auth"
-  endpoint: "/out_of_stock"
-  bronze_directory: "/bronze/"
-  silver_directory: "/silver/"
-  stock_api_connection_id: "stock_api_connection"
-  db_connection_id: "orders_pg_connection"
-  hdfs_connection_id: "hdfs_connection"
-  spark_connection_id: "spark_connection"
-  username: ""
-  password: ""
-  tables:
-    - aisles
-    - departments
-    - stores
-    - store_types
-
-logger:
-  level: "DEBUG"
+task7:
+  stock_api:
+    auth_endpoint: "/auth"
+    endpoint: "/out_of_stock"
+    username: ""
+    password: ""
+  fs:
+    bronze_directory: "/bronze/"
+    silver_directory: "/silver/"
+  connections:
+    stock_api_connection_id: "stock_api_connection"
+    db_connection_id: "orders_pg_connection"
+    hdfs_connection_id: "hdfs_connection"
+    spark_connection_id: "spark_connection"
+  db:
+    tables:
+      - aisles
+      - clients
+      - departments
+      - location_areas
+      - products
+      - orders
+      - stores
+      - store_types

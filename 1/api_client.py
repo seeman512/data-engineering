@@ -9,6 +9,7 @@ class ApiClient:
         self.cfg = cfg
         self.log = logging.getLogger(__name__)
         self.token = None
+        self.timeout = 30
 
     def get_data(self, date):
         if not self.token:
@@ -19,13 +20,13 @@ class ApiClient:
         headers = {"content-type": "application/json",
                    "Authorization": f"JWT {self.token}"}
 
-        r = requests.get(url, data=data, headers=headers)
+        r = requests.get(url, data=data, headers=headers, timeout=self.timeout)
         if r.status_code == 401:
             self.log.info("Token expired")
             self.set_token()
 
             headers["Authorization"] = f"JWT {self.token}"
-            r = requests.get(url, data=data, headers=headers)
+            r = requests.get(url, data=data, headers=headers, timeout=self.timeout)
 
         r.raise_for_status()
         return(r.json())
@@ -34,7 +35,8 @@ class ApiClient:
         r = requests.post(self.cfg["url"] + self.cfg["auth_endpoint"],
                           data=json.dumps({"username": self.cfg["username"],
                                            "password": self.cfg["password"]}),
-                          headers={"content-type": "application/json"})
+                          headers={"content-type": "application/json"},
+                          timeout=self.timeout)
 
         r.raise_for_status()
 

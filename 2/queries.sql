@@ -61,6 +61,7 @@
             i.film_id is NULL;
 
 -- 5. вывести топ 3 актеров, которые больше всего появлялись в фильмах в категории “Children”. Если у нескольких актеров одинаковое кол-во фильмов, вывести всех.
+    -- 5.1 Без оконных функций
     WITH
         actors_list
     AS
@@ -93,7 +94,28 @@
             LIMIT 3
 
         )
-    ORDER BY cnt DESC;
+    ORDER BY cnt DESC, actor_id;
+    -- 5.2 С оконными функциями
+    SELECT
+        *
+    FROM
+       (
+           SELECT
+               a.actor_id, a.first_name, a.last_name, count(*) cnt,
+               dense_rank() over (order by count(*) desc) as rank
+           FROM
+               category c, film_category fc, film_actor fa, actor a
+           WHERE
+               c.name='Children'
+               and fc.category_id=c.category_id
+               and fa.film_id=fc.film_id
+               and a.actor_id=fa.actor_id
+           GROUP BY
+               a.actor_id
+       ) as T
+    WHERE
+        rank <= 3
+    ORDER BY cnt DESC, actor_id;
         
 -- 6. вывести города с количеством активных и неактивных клиентов (активный — customer.active = 1). Отсортировать по количеству неактивных клиентов по убыванию.
     SELECT

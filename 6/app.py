@@ -5,6 +5,7 @@ import logging
 import psycopg2
 from hdfs import InsecureClient
 from pyspark.sql import SparkSession
+from pyspark.sql.window import Window
 import pyspark.sql.functions as F
 
 from functools import partial
@@ -79,7 +80,10 @@ if __name__ == "__main__":
             .join(film_actor_df, film_actor_df.film_id == film_category_df.film_id, "inner")\
             .join(actor_df, actor_df.actor_id == film_actor_df.actor_id, "inner")\
             .groupBy(actor_df.actor_id, actor_df.first_name, actor_df.last_name)\
-            .count()
+            .count()\
+            .withColumn("rank", F.dense_rank().over(\
+                Window.orderBy(F.desc("count"))\
+            ))
         categories_with_a_and_dash_cities_df = film_vs_category_df\
             .join(inventory_df, film_df.film_id == inventory_df.film_id, "inner")\
             .join(rental_df, rental_df.inventory_id == inventory_df.inventory_id, "inner")\
@@ -132,14 +136,8 @@ if __name__ == "__main__":
                     + "в фильмах в категории “Children”."
                     + "Если у нескольких актеров одинаковое кол-во фильмов, вывести всех.",
             "df": children_category_actor_df
-                    .join(children_category_actor_df
-                            .select("count")
-                            .distinct()
-                            .orderBy(F.desc("count"))
-                            .limit(3),
-                          ["count"],
-                          "inner")
-                    .orderBy(F.desc("count"))
+                    .where(F.col("rank") <= 3)
+                    .orderBy(F.desc("count"), F.asc("actor_id"))
             }, {
             "msg": "вывести города с количеством активных и неактивных клиентов "
                     + "(активный — customer.active = 1). "
